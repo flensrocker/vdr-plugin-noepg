@@ -7,19 +7,16 @@
  */
 
 #include <vdr/plugin.h>
-#include <vdr/libsi/section.h>
 #include <vdr/epg.h>
 
 #if VDRVERSNUM < 10726
+#include <vdr/libsi/section.h>
+
 class cEpgHandler : public cListObject {
 public:
   cEpgHandler(void) {}
   virtual ~cEpgHandler() {}
-  virtual bool HandleEitEvent(cSchedule *Schedule, const SI::EIT::Event *EitEvent) { return false; }
-  virtual bool SetTitle(cEvent *Event, const char *Title) { return false; }
-  virtual bool SetShortText(cEvent *Event, const char *ShortText) { return false; }
-  virtual bool SetDescription(cEvent *Event, const char *Description) { return false; }
-  virtual bool HandleEvent(cEvent *Event) { return false; }
+  virtual bool IgnoreChannel(const cChannel *Channel) { return false; }
   };
 #endif
 
@@ -92,11 +89,11 @@ public:
   {
   }
 
-  virtual bool HandleEitEvent(cSchedule *Schedule, const SI::EIT::Event *EitEvent)
+  virtual bool IgnoreChannel(const cChannel *Channel)
   {
-    if ((_lastMode == enemUnknown) || (!(_lastChannel == Schedule->ChannelID()))) {
+    if ((_lastMode == enemUnknown) || (!(_lastChannel == Channel->GetChannelID()))) {
        cMutexLock lock(&NoEpgMutex);
-       _lastChannel = Schedule->ChannelID();
+       _lastChannel = Channel->GetChannelID();
        _lastChannelIsInList = false;
        for (cChannelID* c = NoEpgChannels.First(); c; c = NoEpgChannels.Next(c)) {
            if (!c->id.Valid()) {
@@ -181,8 +178,10 @@ bool cPluginNoepg::ProcessArgs(int argc, char *argv[])
 bool cPluginNoepg::Initialize(void)
 {
   // Initialize any background activities the plugin shall perform.
+#if VDRVERSNUM >= 10726
   if (ReadConfig())
      new cNoEpgHandler();
+#endif
   return true;
 }
 
@@ -195,7 +194,9 @@ bool cPluginNoepg::Start(void)
 void cPluginNoepg::Stop(void)
 {
   // Stop any background activities the plugin is performing.
+#if VDRVERSNUM >= 10726
   SaveConfig();
+#endif
 }
 
 void cPluginNoepg::Housekeeping(void)
