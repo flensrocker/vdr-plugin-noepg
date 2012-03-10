@@ -28,13 +28,9 @@ blacklist: block EPG of all channels from the list
 
 Format
 ------
-settings.conf has INI-style-format.
-
-[global]
- mode=[whitelist|blacklist]
-[channels]
- channel-id 1
- channel-id 2
- channel-id 3
- channel-id 4
- ...
+mode=[whitelist|blacklist]
+channel-id
+channel-id
+channel-id
+channel-id
+...
