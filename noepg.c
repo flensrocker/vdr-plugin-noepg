@@ -43,8 +43,9 @@ public:
 
   virtual bool IgnoreChannel(const cChannel *Channel)
   {
-    if ((_lastMode == enemUnknown) || (!(_lastChannel == Channel->GetChannelID()))) {
+    if (cNoepgChannelID::NoEpgForceEval || (_lastMode == enemUnknown) || (!(_lastChannel == Channel->GetChannelID()))) {
        cMutexLock lock(&cNoepgChannelID::NoEpgMutex);
+       cNoepgChannelID::NoEpgForceEval = false;
        _lastChannel = Channel->GetChannelID();
        _lastChannelIsInList = false;
        for (cNoepgChannelID* c = cNoepgChannelID::NoEpgChannels.First(); c; c = cNoepgChannelID::NoEpgChannels.Next(c)) {

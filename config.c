@@ -3,6 +3,7 @@
 #include <vdr/plugin.h>
 
 
+bool                     cNoepgChannelID::NoEpgForceEval = false;
 cMutex                   cNoepgChannelID::NoEpgMutex;
 cConfig<cNoepgChannelID> cNoepgChannelID::NoEpgChannels;
 

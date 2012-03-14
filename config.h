@@ -23,6 +23,7 @@ public:
   bool Parse(const char *s);
   bool Save(FILE *f);
 
+  static bool                     NoEpgForceEval;
   static cMutex                   NoEpgMutex;
   static cConfig<cNoepgChannelID> NoEpgChannels;
 

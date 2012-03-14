@@ -9,7 +9,13 @@ cNoepgMainMenu::cNoepgMainMenu(void)
   int inList;
   tChannelID cid;
   cNoepgChannelID *item;
-  cNoepgChannelID::ReadConfig(_filelist, NULL);
+
+  if (!cNoepgChannelID::ReadConfig(_filelist, NULL)) {
+     modeSet = true;
+     _mode = 0;
+     Add(new cMenuEditBoolItem(tr("mode"), &_mode, tr("blacklist"), tr("whitelist")));
+     }
+
   for (cChannel *chan = Channels.First(); chan; chan = Channels.Next(chan)) {
        if (chan->GroupSep())
           continue;
@@ -57,5 +63,8 @@ void cNoepgMainMenu::Store(void)
          }
       }
   cNoepgChannelID::SaveConfig(_filelist, NULL);
+
+  cMutexLock lock(&cNoepgChannelID::NoEpgMutex);
   cNoepgChannelID::ReadConfig(cNoepgChannelID::NoEpgChannels, &cNoepgChannelID::NoEpgMutex);
+  cNoepgChannelID::NoEpgForceEval = true;
 }
