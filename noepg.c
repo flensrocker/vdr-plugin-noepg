@@ -6,6 +6,8 @@
  * $Id$
  */
 
+#include "menu.h"
+
 #include <vdr/plugin.h>
 #include <vdr/epg.h>
 
@@ -20,56 +22,6 @@ public:
   };
 #endif
 
-
-enum eNoEpgMode {
-  enemUnknown    = 0,
-  enemWhitelist  = 1,
-  enemBlacklist  = 2
-  };
-
-class cChannelID;
-
-cMutex              NoEpgMutex;
-cConfig<cChannelID> NoEpgChannels;
-
-class cChannelID : public cListObject {
-public:
-  // either mode or id is set, never both
-  eNoEpgMode mode;
-  tChannelID id;
-
-  cChannelID(void)
-  :mode(enemUnknown)
-  {
-  }
-
-  virtual ~cChannelID(void) {}
-
-  bool Parse(const char *s)
-  {
-    if (strncmp(s, "mode=w", 6) == 0) {
-       mode = enemWhitelist;
-       return true;
-       }
-    if (strncmp(s, "mode=b", 6) == 0) {
-       mode = enemBlacklist;
-       return true;
-       }
-    id = tChannelID::FromString(s);
-    return id.Valid();
-  }
-
-  bool Save(FILE *f)
-  {
-    if (id.Valid())
-       return fprintf(f, "%s\n", *id.ToString()) > 0;
-    if (mode == enemWhitelist)
-       return fprintf(f, "mode=whitelist\n") > 0;
-    if (mode == enemBlacklist)
-       return fprintf(f, "mode=blacklist\n") > 0;
-    return false;
-  }
-  };
 
 class cNoEpgHandler : public cEpgHandler {
 private:
@@ -92,10 +44,10 @@ public:
   virtual bool IgnoreChannel(const cChannel *Channel)
   {
     if ((_lastMode == enemUnknown) || (!(_lastChannel == Channel->GetChannelID()))) {
-       cMutexLock lock(&NoEpgMutex);
+       cMutexLock lock(&cNoepgChannelID::NoEpgMutex);
        _lastChannel = Channel->GetChannelID();
        _lastChannelIsInList = false;
-       for (cChannelID* c = NoEpgChannels.First(); c; c = NoEpgChannels.Next(c)) {
+       for (cNoepgChannelID* c = cNoepgChannelID::NoEpgChannels.First(); c; c = cNoepgChannelID::NoEpgChannels.Next(c)) {
            if (!c->id.Valid()) {
               if (c->mode != enemUnknown)
                  _lastMode = c->mode;
@@ -118,7 +70,7 @@ public:
   }
   };
 
-static const char *VERSION        = "0.0.1";
+static const char *VERSION        = "0.0.2";
 static const char *DESCRIPTION    = "block/allow EPG for selected channels";
 static const char *MAINMENUENTRY  = NULL;
 
@@ -146,9 +98,6 @@ public:
   virtual bool Service(const char *Id, void *Data = NULL);
   virtual const char **SVDRPHelpPages(void);
   virtual cString SVDRPCommand(const char *Command, const char *Option, int &ReplyCode);
-
-  bool ReadConfig(void);
-  bool SaveConfig(void);
   };
 
 cPluginNoepg::cPluginNoepg(void)
@@ -179,7 +128,7 @@ bool cPluginNoepg::Initialize(void)
 {
   // Initialize any background activities the plugin shall perform.
 #if VDRVERSNUM >= 10726
-  if (ReadConfig())
+  if (cNoepgChannelID::ReadConfig(cNoepgChannelID::NoEpgChannels, &cNoepgChannelID::NoEpgMutex))
      new cNoEpgHandler();
 #endif
   return true;
@@ -195,7 +144,7 @@ void cPluginNoepg::Stop(void)
 {
   // Stop any background activities the plugin is performing.
 #if VDRVERSNUM >= 10726
-  SaveConfig();
+  cNoepgChannelID::SaveConfig(cNoepgChannelID::NoEpgChannels, &cNoepgChannelID::NoEpgMutex);
 #endif
 }
 
@@ -231,7 +180,7 @@ cOsdObject *cPluginNoepg::MainMenuAction(void)
 cMenuSetupPage *cPluginNoepg::SetupMenu(void)
 {
   // Return a setup menu in case the plugin supports one.
-  return NULL;
+  return new cNoepgMainMenu();
 }
 
 bool cPluginNoepg::SetupParse(const char *Name, const char *Value)
@@ -256,19 +205,6 @@ cString cPluginNoepg::SVDRPCommand(const char *Command, const char *Option, int 
 {
   // Process SVDRP commands this plugin implements
   return NULL;
-}
-
-bool cPluginNoepg::ReadConfig(void)
-{
-  cMutexLock lock(&NoEpgMutex);
-  cString filename = cString::sprintf("%s/settings.conf", ConfigDirectory(Name()));
-  return NoEpgChannels.Load(*filename, true, true);
-}
-
-bool cPluginNoepg::SaveConfig(void)
-{
-  cMutexLock lock(&NoEpgMutex);
-  return NoEpgChannels.Save();
 }
 
 VDRPLUGINCREATOR(cPluginNoepg); // Don't touch this!
