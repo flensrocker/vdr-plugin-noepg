@@ -34,3 +34,8 @@ channel-id
 channel-id
 channel-id
 ...
+
+Helper
+------
+"nvertigo" from vdr-portal.de provided a script to convert the settings
+of the noepg-patch. You'll find it in the contrib-directory.

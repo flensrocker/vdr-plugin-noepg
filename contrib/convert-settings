@@ -1,0 +1,35 @@
+#!/bin/bash
+
+VDRCONF=${1:-"/etc/vdr"}
+
+
+NOEPGMODE=$(grep "noEPGMode" $VDRCONF/setup.conf | cut -d " " -f3)
+
+if mkdir -p $VDRCONF/plugins/noepg >/dev/null 2>&1 ; then
+    	if [ $NOEPGMODE == "0" ] ; then
+            	echo "mode=blacklist" > $VDRCONF/plugins/noepg/settings.conf
+    	elif [ $NOEPGMODE == "1" ] ; then
+            	echo "mode=whitelist" > $VDRCONF/plugins/noepg/settings.conf
+    	else
+            	echo "No valid noEPGMode found!"
+            	exit 1
+    	fi
+    	(
+            	(
+                    	for i in $(grep noEPGList $VDRCONF/setup.conf); do 
+                          	echo $i 
+                    	done
+            	)| grep -v -e '=' -e 'noEPGList'
+    	) >> $VDRCONF/plugins/noepg/settings.conf
+else
+    	echo "Something's wrong with $VDRCONF/plugins."
+    	echo "A regular file, symlink, fifo etc blocks"
+    	echo "the creation of the directory:"
+    	echo " "
+    	echo "$VDRCONF/plugins/noepg"
+    	echo " "
+    	echo "You can provide the correct VDRCONF as"
+    	echo "first and only argument to $0"
+    	exit 2
+fi
+
