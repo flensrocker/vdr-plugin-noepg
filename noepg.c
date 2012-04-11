@@ -71,7 +71,7 @@ public:
   }
   };
 
-static const char *VERSION        = "0.0.2";
+static const char *VERSION        = "0.0.3-pre";
 static const char *DESCRIPTION    = trNOOP("block/allow EPG for selected channels");
 static const char *MAINMENUENTRY  = NULL;
 

@@ -30,10 +30,15 @@ Format
 ------
 mode=[whitelist|blacklist]
 channel-id
-channel-id
-channel-id
+channel-id // comment
+channel-id //= channel name
 channel-id
 ...
+
+Notes
+-----
+Comments starting with "//=" will be ignored and replaced with
+the name of the channel.
 
 Helper
 ------

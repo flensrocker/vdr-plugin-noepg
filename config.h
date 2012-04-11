@@ -16,9 +16,13 @@ public:
   eNoEpgMode mode;
   tChannelID id;
 
+private:
+  cString *comment;
+
+public:
   cNoepgChannelID(void);
   cNoepgChannelID(eNoEpgMode Mode, tChannelID Id);
-  virtual ~cNoepgChannelID(void) {}
+  virtual ~cNoepgChannelID(void);
 
   bool Parse(const char *s);
   bool Save(FILE *f);

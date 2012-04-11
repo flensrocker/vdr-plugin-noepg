@@ -16,11 +16,21 @@ cNoepgChannelID::cNoepgChannelID(void)
 cNoepgChannelID::cNoepgChannelID(eNoEpgMode Mode, tChannelID Id)
 :mode(Mode)
 ,id(Id)
+,comment(NULL)
 {
+}
+
+cNoepgChannelID::~cNoepgChannelID(void)
+{
+  if (comment != NULL) {
+     delete comment;
+     comment = NULL;
+     }
 }
 
 bool cNoepgChannelID::Parse(const char *s)
 {
+  comment = NULL;
   if (strncmp(s, "mode=w", 6) == 0) {
      mode = enemWhitelist;
      return true;
@@ -29,14 +39,39 @@ bool cNoepgChannelID::Parse(const char *s)
      mode = enemBlacklist;
      return true;
      }
-  id = tChannelID::FromString(s);
+  // allow comments after first space
+  int spos = 0;
+  int slen = strlen(s);
+  while ((spos < slen) && (s[spos] != ' '))
+        spos++;
+  if (spos < slen) {
+     char *tmp = new char[spos + 1];
+     memcpy(tmp, s, spos);
+     tmp[spos] = 0;
+     id = tChannelID::FromString(tmp);
+     delete tmp;
+     tmp = skipspace(s + spos);
+     if ((tmp != NULL) && (strlen(tmp) > 0)) {
+        if ((strlen(tmp) <= 3) || !startswith(tmp, "//="))
+           comment = new cString(tmp);
+        }
+     }
+  else
+     id = tChannelID::FromString(s);
   return id.Valid();
 }
 
 bool cNoepgChannelID::Save(FILE *f)
 {
-  if (id.Valid())
-     return fprintf(f, "%s\n", *id.ToString()) > 0;
+  if (id.Valid()) {
+     if (comment == NULL) {
+        cChannel *c = Channels.GetByChannelID(id);
+        if (c != NULL)
+           return fprintf(f, "%s //= %s\n", *id.ToString(), c->Name()) > 0;
+        return fprintf(f, "%s\n", *id.ToString()) > 0;
+        }
+     return fprintf(f, "%s %s\n", *id.ToString(), **comment) > 0;
+     }
   if (mode == enemWhitelist)
      return fprintf(f, "mode=whitelist\n") > 0;
   if (mode == enemBlacklist)
