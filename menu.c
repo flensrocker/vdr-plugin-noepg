@@ -51,6 +51,8 @@ cNoepgMainMenu::cNoepgMainMenu(void)
       _editlist.Add(item);
       Add(new cMenuEditBoolItem(chan->Name(), (int*)&item->mode));
       }
+
+  SetHelp(NULL, tr("page up"), tr("page down"), NULL);
 }
 
 cNoepgMainMenu::~cNoepgMainMenu(void)
@@ -75,4 +77,17 @@ void cNoepgMainMenu::Store(void)
   cMutexLock lock(&cNoepgChannelID::NoEpgMutex);
   cNoepgChannelID::ReadConfig(cNoepgChannelID::NoEpgChannels, &cNoepgChannelID::NoEpgMutex);
   cNoepgChannelID::NoEpgForceEval = true;
+}
+
+eOSState cNoepgMainMenu::ProcessKey(eKeys Key)
+{
+  if (Key == kGreen) {
+     PageUp();
+     return osUnknown;
+     }
+  if (Key == kYellow) {
+     PageDown();
+     return osUnknown;
+     }
+  return cMenuSetupPage::ProcessKey(Key);
 }

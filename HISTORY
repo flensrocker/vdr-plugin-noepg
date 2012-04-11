@@ -8,3 +8,9 @@ VDR Plugin 'noepg' Revision History
 2012-03-14: Version 0.0.2
 
 - add OSD setup page
+
+2012-04-11: Version 0.0.3
+
+- add french translation
+- add support for comments in settings.conf
+- add page up/down at OSD setup page

@@ -20,6 +20,7 @@ protected:
 public:
   cNoepgMainMenu(void);
   virtual ~cNoepgMainMenu(void);
+  virtual eOSState ProcessKey(eKeys Key);
 };
 
 #endif
