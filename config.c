@@ -10,13 +10,15 @@ cConfig<cNoepgChannelID> cNoepgChannelID::NoEpgChannels;
 
 cNoepgChannelID::cNoepgChannelID(void)
 :mode(enemUnknown)
+,id(tChannelID::InvalidID)
+,comment(NULL)
 {
 }
 
-cNoepgChannelID::cNoepgChannelID(eNoEpgMode Mode, tChannelID Id)
+cNoepgChannelID::cNoepgChannelID(eNoEpgMode Mode, tChannelID Id, cString *Comment)
 :mode(Mode)
 ,id(Id)
-,comment(NULL)
+,comment(Comment)
 {
 }
 

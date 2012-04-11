@@ -8,6 +8,7 @@ cNoepgMainMenu::cNoepgMainMenu(void)
   bool modeSet = false;
   int inList;
   tChannelID cid;
+  cString *comment;
   cNoepgChannelID *item;
 
   if (!cNoepgChannelID::ReadConfig(_filelist, NULL)) {
@@ -21,6 +22,7 @@ cNoepgMainMenu::cNoepgMainMenu(void)
           continue;
        cid = chan->GetChannelID();
        inList = 0;
+       comment = NULL;
        for (cNoepgChannelID* c = _filelist.First(); c; c = _filelist.Next(c)) {
            if (!c->id.Valid()) {
               if (!modeSet) {
@@ -36,6 +38,8 @@ cNoepgMainMenu::cNoepgMainMenu(void)
 
            if (c->id == cid) {
               inList = 1;
+              if (c->comment != NULL)
+                 comment = new cString(*c->comment);
               break;
               }
            }
@@ -43,6 +47,7 @@ cNoepgMainMenu::cNoepgMainMenu(void)
       item = new cNoepgChannelID();
       item->mode = (eNoEpgMode)inList;
       item->id = cid;
+      item->comment = comment;
       _editlist.Add(item);
       Add(new cMenuEditBoolItem(chan->Name(), (int*)&item->mode));
       }
@@ -55,11 +60,14 @@ cNoepgMainMenu::~cNoepgMainMenu(void)
 void cNoepgMainMenu::Store(void)
 {
   _filelist.cList<cNoepgChannelID>::Clear();
-  _filelist.Add(new cNoepgChannelID((_mode == 1) ? enemWhitelist : enemBlacklist, tChannelID::InvalidID));
+  _filelist.Add(new cNoepgChannelID((_mode == 1) ? enemWhitelist : enemBlacklist, tChannelID::InvalidID, NULL));
   for (cNoepgChannelID *c = _editlist.First(); c; c = _editlist.Next(c)) {
       bool inList = ((int)c->mode == 1);
       if (c->id.Valid() && inList) {
-         _filelist.Add(new cNoepgChannelID(enemUnknown, c->id));
+         cString *comment = NULL;
+         if (c->comment != NULL)
+            comment = new cString(*c->comment);
+         _filelist.Add(new cNoepgChannelID(enemUnknown, c->id, comment));
          }
       }
   cNoepgChannelID::SaveConfig(_filelist, NULL);
