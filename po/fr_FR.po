@@ -17,13 +17,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "mode"
-msgstr "Modus"
+msgstr "Mode"
 
 msgid "blacklist"
-msgstr "ausschließen"
+msgstr "liste noire"
 
 msgid "whitelist"
-msgstr "zulassen"
+msgstr "liste blanche"
 
 msgid "block/allow EPG for selected channels"
-msgstr "EPG für bestimmte Kanäle blockieren/erlauben"
+msgstr "bloquer/autoriser EPG pour les chaînes sélectionnées"
