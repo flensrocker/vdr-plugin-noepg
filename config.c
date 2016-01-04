@@ -67,7 +67,13 @@ bool cNoepgChannelID::Save(FILE *f)
 {
   if (id.Valid()) {
      if (comment == NULL) {
-        cChannel *c = Channels.GetByChannelID(id);
+#if VDRVERSNUM > 20300
+        LOCK_CHANNELS_READ;
+        const cChannels *channels = Channels;
+#else
+        cChannels *channels = &Channels;
+#endif
+        const cChannel *c = channels->GetByChannelID(id);
         if (c != NULL)
            return fprintf(f, "%s //= %s\n", *id.ToString(), c->Name()) > 0;
         return fprintf(f, "%s\n", *id.ToString()) > 0;

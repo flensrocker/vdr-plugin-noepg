@@ -17,32 +17,38 @@ cNoepgMainMenu::cNoepgMainMenu(void)
      Add(new cMenuEditBoolItem(tr("mode"), &_mode, tr("blacklist"), tr("whitelist")));
      }
 
-  for (cChannel *chan = Channels.First(); chan; chan = Channels.Next(chan)) {
-       if (chan->GroupSep())
-          continue;
-       cid = chan->GetChannelID();
-       inList = 0;
-       comment = NULL;
-       for (cNoepgChannelID* c = _filelist.First(); c; c = _filelist.Next(c)) {
-           if (!c->id.Valid()) {
-              if (!modeSet) {
-                 modeSet = true;
-                 if (c->mode == enemBlacklist)
-                    _mode = 0;
-                 else if (c->mode == enemWhitelist)
-                    _mode = 1;
-                 Add(new cMenuEditBoolItem(tr("mode"), &_mode, tr("blacklist"), tr("whitelist")));
-                 }
-              continue;
-              }
+#if VDRVERSNUM > 20300
+  LOCK_CHANNELS_READ;
+  const cChannels *channels = Channels;
+#else
+  const cChannels *channels = &Channels;
+#endif
+  for (const cChannel *chan = channels->First(); chan; chan = channels->Next(chan)) {
+      if (chan->GroupSep())
+         continue;
+      cid = chan->GetChannelID();
+      inList = 0;
+      comment = NULL;
+      for (cNoepgChannelID* c = _filelist.First(); c; c = _filelist.Next(c)) {
+          if (!c->id.Valid()) {
+             if (!modeSet) {
+                modeSet = true;
+                if (c->mode == enemBlacklist)
+                   _mode = 0;
+                else if (c->mode == enemWhitelist)
+                   _mode = 1;
+                Add(new cMenuEditBoolItem(tr("mode"), &_mode, tr("blacklist"), tr("whitelist")));
+                }
+             continue;
+             }
 
-           if (c->id == cid) {
-              inList = 1;
-              if (c->comment != NULL)
-                 comment = new cString(*c->comment);
-              break;
-              }
-           }
+          if (c->id == cid) {
+             inList = 1;
+             if (c->comment != NULL)
+                comment = new cString(*c->comment);
+             break;
+             }
+          }
 
       item = new cNoepgChannelID();
       item->mode = (eNoEpgMode)inList;
